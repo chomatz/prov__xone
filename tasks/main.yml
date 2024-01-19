@@ -1,2 +1,58 @@
 ---
-# tasks file for prov__xone
+
+- name: ensure tasks run only on selected os releases
+  block:
+
+    - name: install xone - xbox one and xbox series s|x gamepad drivers
+      ansible.builtin.debug:
+        msg: see https://github.com/medusalix/xone for details
+        verbosity: 0
+      delegate_to: localhost
+      run_once: true
+
+    - name: install xone driver dependencies
+      ansible.builtin.package:
+        name: "{{ xone.packages }}"
+        state: latest
+
+    - name: initialize xone local directory
+      ansible.builtin.file:
+        path: "{{ xone.repository_local }}"
+        state: absent
+
+    - name: clone xone repository
+      ansible.builtin.git:
+        repo: "{{ xone.repository_public }}"
+        dest: "{{ xone.repository_local }}"
+
+    - name: provide an error handler if the xone driver is already installed
+      block:
+
+        - name: install xone driver
+          ansible.builtin.command:
+            cmd: ./install.sh --release
+            chdir: "{{ xone.repository_local }}"
+          register: cmd_xone_install
+
+      rescue:
+
+        - name: uninstall existing xone driver
+          ansible.builtin.command:
+            cmd: ./uninstall.sh
+            chdir: "{{ xone.repository_local }}"
+          when:
+            - cmd_xone_install is failed
+            - "'already installed' in cmd_xone_install.stderr"
+
+        - name: reinstall xone driver
+          ansible.builtin.command:
+            cmd: ./install.sh --release
+            chdir: "{{ xone.repository_local }}"
+
+    - name: download dongle firmware
+      ansible.builtin.command:
+        cmd: xone-get-firmware.sh --skip-disclaimer
+
+  when: ansible_distribution == "Fedora"
+
+...
