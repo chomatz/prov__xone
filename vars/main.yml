@@ -1,2 +1,13 @@
 ---
-# vars file for prov__xone
+
+xone:
+  packages:
+    - cabextract
+    - curl
+    - dkms
+    - kernel
+    - kernel-headers
+  repository_local: /opt/xone
+  repository_public: https://github.com/medusalix/xone
+
+...
