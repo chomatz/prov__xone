@@ -3,26 +3,6 @@
 - name: ensure tasks run only on selected os releases
   block:
 
-    - name: install xone - xbox one and xbox series s|x gamepad drivers
-      ansible.builtin.debug:
-        msg: |
-          -------------------------------------------------
-          see https://github.com/medusalix/xone for details
-          -------------------------------------------------
-        verbosity: 0
-      delegate_to: localhost
-      run_once: true
-
-    - name: prepare dependencies
-      ansible.builtin.debug:
-        msg: |
-          --------------------------------------
-          install and download xone dependencies
-          --------------------------------------
-        verbosity: 0
-      delegate_to: localhost
-      run_once: true
-
     - name: install xone dependencies
       ansible.builtin.package:
         name: "{{ xone.packages }}"
@@ -37,16 +17,6 @@
       ansible.builtin.git:
         repo: "{{ xone.repository_public }}"
         dest: "{{ xone.repository_local }}"
-
-    - name: install xone
-      ansible.builtin.debug:
-        msg: |
-          ---------------------------------
-          build and install the xone driver
-          ---------------------------------
-        verbosity: 0
-      delegate_to: localhost
-      run_once: true
 
     - name: provide an error handler if the xone driver is already installed
       block:
@@ -71,16 +41,6 @@
           ansible.builtin.command:
             cmd: ./install.sh --release
             chdir: "{{ xone.repository_local }}"
-
-    - name: download official firmware
-      ansible.builtin.debug:
-        msg: |
-          ----------------------------------------------------------------
-          download the official firmware for the microsoft xbox one dongle
-          ----------------------------------------------------------------
-        verbosity: 0
-      delegate_to: localhost
-      run_once: true
 
     - name: download firmware
       ansible.builtin.command:
